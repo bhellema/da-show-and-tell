@@ -1,24 +1,26 @@
-# AEM Block Collection
+# da-show-and-tell
 
-This project provides a foundation for starting an AEM Edge Delivery Services project. It includes many common blocks and features a project might need.
+This is a project created by AEMY.
 
-## DA compatible
+## Environments
 
-This specific repo has been _slightly_ modified to be compatible with DA's live preview.
+- Preview: https://main--da-show-and-tell--bhellema.aem.page/
+- Live: https://main--da-show-and-tell--bhellema.aem.live/
 
-## Getting started
+## Installation
 
-### 1. Github
-1. Use this template to make a new repo.
-1. Install [AEM Code Sync](https://github.com/apps/aem-code-sync).
+```sh
+npm i
+```
 
-### 2. DA content
-1. Browse to https://da.live/start.
-2. Follow the steps.
+## Linting
 
-### 3. Local development
-1. Clone your new repo to your computer.
-1. Install the AEM CLI using your terminal: `sudo npm install -g @adobe/aem-cli`
-1. Start the AEM CLI: `aem up`.
-1. Open the `{repo}` folder in your favorite code editor and buil something.
-1. **Recommended:** Install common npm packages like linting and testing: `npm i`.
+```sh
+npm run lint
+```
+
+## Local development
+
+1. Install the [AEM CLI](https://github.com/adobe/helix-cli): `npm install -g @adobe/aem-cli`
+1. Start AEM Proxy: `aem up` (opens your browser at `http://localhost:3000/`)
+1. Open the `da-show-and-tell` directory in your favorite IDE and start coding :)
