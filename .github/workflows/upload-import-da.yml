@@ -164,7 +164,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: DA upload succeeded. (Step 5 of ${{ env.total_steps }).
+          message: DA upload succeeded. (Step 5 of ${{ env.total_steps }}).
           status_type: ok
           agent_name: upload-import-da
 
