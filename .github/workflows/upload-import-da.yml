@@ -87,6 +87,8 @@ jobs:
           npm install
           cd ../sta-da-helper
           npm install
+          cd ../sta-aem-helper
+          npm install
           cd ..
           npm install @adobe/aem-import-helper
 
