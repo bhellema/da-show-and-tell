@@ -10,15 +10,13 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      # Zip URL is only valid for 60 minutes.
       zip_url:
         description: 'The URL of the zip file to download.'
         required: true
         type: password
       aemy_callback_urls:
-        description: 'The AEMY context as a string.'
+        description: 'The AEMY status callback URLs.'
         required: true
-        type: password
       aemy_context:
         description: 'The AEMY context as a string.'
         required: true
@@ -31,6 +29,12 @@ on:
         default: false
       action_url:
         description: 'The URL that shows state of the workflow as an aid for the user.'
+        required: false
+      preview:
+        description: 'Indicate whether the uploaded content should be previewed.'
+        required: false
+      previewAndPublish:
+        description: 'Indicate whether the uploaded content should be previewed and published.'
         required: false
 
 permissions:
@@ -57,6 +61,17 @@ jobs:
           if [ -z "${{ env.AEMY_API_KEY }}" ]; then
             errorMessage="❌ The following secret is not set in your GitHub repo: JS_LF- AEMY_API_KEY JS_LF"
             echo "errorMessage=$errorMessage" >> $GITHUB_ENV
+          fi
+
+          total_steps=5
+          preview_operation=''
+          if ${{ github.event.inputs.preview == 'true' }}; then
+            total_steps=6
+            preview_operation='preview'
+          fi
+          if ${{ github.event.inputs.previewAndPublish == 'true' }}; then
+            total_steps=6
+            preview_operation='preview and publish'
           fi
 
       - name: Checkout
@@ -86,20 +101,16 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Inputs look good. Now setting up the upload. (Step 1 of 5).
+          message: Inputs look good. Now setting up the upload. (Step 1 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-da
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get install -y jq
 
       - name: Progress 2 - Extracting zip
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Downloading and extracting content from the Import zip... (Step 2 of 5).
+          message: Downloading and extracting content from the Import zip... (Step 2 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-da
 
@@ -119,13 +130,13 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: Progress 3a - Initiating da upload
+      - name: Progress 3 - Initiating da upload
         if: ${{ steps.download-zip.outputs.temp_dir != '' }}
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files. Initiating upload... (Step 3 of 5).
+          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files. Initiating upload... (Step 3 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-da
 
@@ -144,7 +155,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: ${{ steps.da-upload-step.outputs.error_message }} ${{ env.ACTION_URL }} (Step 4 of 5).
+          message: ${{ steps.da-upload-step.outputs.error_message }} (Step 4 of ${{ env.total_steps }}) ${{ env.ACTION_URL }} 
           status_type: error
           agent_name: upload-import-da
 
@@ -153,7 +164,46 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: DA upload succeeded. (Step 5 of 5).
+          message: DA upload succeeded. (Step 5 of ${{ env.total_steps }).
+          status_type: ok
+          agent_name: upload-import-da
+
+      - name: Preview Publish
+        if: ${{ env.preview_operation != '' }}
+        uses: ./.github/actions/sta-status
+        with:
+          callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
+          context: ${{ github.event.inputs.aemy_context }}
+          message: Now performing ${{ env.preview_operation }} (Step 6 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
+          status_type: progress
+          agent_name: upload-import-da
+
+      - name: Preview/Publish Content
+        id: preview-publish-content
+        if: ${{ env.preview_operation != '' }}
+        uses: ./.github/actions/sta-aem-helper
+        with:
+          context: ${{ github.event.inputs.aemy_context }}
+          urls: ${{ steps.upload-sharepoint.outputs.upload_list }}
+          operation: ${{ github.event.inputs.previewAndPublish == 'true' && 'previewAndPublish' || 'preview' }}
+
+      - name: Report if preview/publish has an error
+        if: ${{ steps.preview-publish-content.outputs.error_message != '' }}
+        uses: ./.github/actions/sta-status
+        with:
+          callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
+          context: ${{ github.event.inputs.aemy_context }}
+          message: The ${{ env.preview_operation }} had failures. ${{ steps.preview-publish-content.outputs.error_message }} ${{ env.ACTION_URL }}
+          status_type: error
+          agent_name: upload-import-da
+
+      - name: Report Preview/Publish Success
+        if: ${{ env.preview_operation != '' }}
+        uses: ./.github/actions/sta-status
+        with:
+          callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
+          context: ${{ github.event.inputs.aemy_context }}
+          message: ${{ env.preview_operation }} succeeded ${{ steps.preview-publish-content.outputs.successes }} times in total.
           status_type: ok
           agent_name: upload-import-da
 

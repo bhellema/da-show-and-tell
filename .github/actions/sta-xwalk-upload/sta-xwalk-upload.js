@@ -56,7 +56,7 @@ async function runUpload(
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`aem-import-helper failed. Error: ${errorOutput}`));
+        reject(new Error(`aem-xwalk-upload failed. Error: ${errorOutput}`));
       }
     });
   });

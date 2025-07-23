@@ -76,7 +76,6 @@ async function replicateToPreview(accessToken, aemUrl, contentPaths) {
  * @param {string} accessToken - JWT access token
  * @param {string} aemUrl - AEM instance URL
  * @param {string[]} contentPaths - Array of content paths to replicate
- * @param {string} replicateType - Type of replication (activate, deactivate, delete)
  * @returns {Promise<Object>}
  */
 async function replicateToPublish(accessToken, aemUrl, contentPaths) {
@@ -185,7 +184,6 @@ export async function run() {
     const errorMessage = `Failed to replicate content: ${error.message}`;
     core.error(errorMessage);
     core.setOutput('error_message', errorMessage);
-    process.exit(1);
   }
 }
 

@@ -57,6 +57,8 @@ jobs:
             errorMessage="❌ The following secret is not set in your GitHub repo: JS_LF- AEMY_API_KEY JS_LF"
             echo "errorMessage=$errorMessage" >> $GITHUB_ENV
           fi
+          
+          echo "total_steps=7" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,7 +91,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Inputs look good. Now setting up the upload. (Step 1 of 7).
+          message: Inputs look good. Now setting up the upload. (Step 1 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-xw
 
@@ -102,7 +104,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Downloading and extracting content from the Import zip... (Step 2 of 7).
+          message: Downloading and extracting content from the Import zip... (Step 2 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-xw
 
@@ -128,7 +130,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files but the XWalk zip was not found so will assume "xwalk-index.zip". Initiating upload... (Step 3 of 7).
+          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files but the XWalk zip was not found so will assume "xwalk-index.zip". Initiating upload... (Step 3 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-xw
 
@@ -138,7 +140,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files. Initiating upload... (Step 3 of 7).
+          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files. Initiating upload... (Step 3 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-xw
 
@@ -153,11 +155,15 @@ jobs:
           operation: fetch-access-token
           credentials_path: ./service-credentials.json
 
-      - name: Check if access token was generated
-        if: ${{ steps.get-access-token-for-aem.outputs.access_token == '' }}
-        run: |
-          echo "Failed to obtain the access token"
-          exit 1
+      - name: Report if access token generation failed
+        if: ${{ steps.get-access-token-for-aem.outputs.error_message != '' }}
+        uses: ./.github/actions/sta-status
+        with:
+          callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
+          context: ${{ github.event.inputs.aemy_context }}
+          message: ${{ steps.get-access-token-for-aem.outputs.error_message }} ${{ env.ACTION_URL }}
+          status_type: error
+          agent_name: upload-import-xw
 
       - name: Run XWalk upload action
         id: xwalk-upload-step
@@ -193,7 +199,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Replicating content to AEM Preview... (Step 4 of 7).
+          message: Replicating content to AEM Preview... (Step 4 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-xw
 
@@ -230,7 +236,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Replicating content to AEM Publish... (Step 5 of 7).
+          message: Replicating content to AEM Publish... (Step 5 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-xw
 
@@ -267,7 +273,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Cleaning up temporary files... (Step 6 of 7).
+          message: Cleaning up temporary files... (Step 6 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-xw
 
@@ -283,6 +289,6 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Upload and replication workflow completed successfully! (Step 7 of 7). ${{ env.ACTION_URL }}
+          message: Upload and replication workflow completed successfully! (Step 7 of ${{ env.total_steps }}). ${{ env.ACTION_URL }}
           status_type: ok
           agent_name: upload-import-xw

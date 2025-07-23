@@ -39,6 +39,15 @@ function getOrgAndSiteFromTargetUrl(target) {
   }
 }
 
+/**
+ * Upload the content to DA.
+ * @param {string} contentPath - The path to the content folder.
+ * @param {string} target - The target URL (DA URL).
+ * @param {string} token - The token to use to upload to DA.
+ * @param {boolean} skipAssets - Whether to skip assets.
+ * @returns {Promise<void>} - Resolves when the upload is complete.
+ * @throws {Error} - If the upload fails.
+ */
 async function uploadToDa(contentPath, target, token, skipAssets) {
   const { org, site } = getOrgAndSiteFromTargetUrl(target);
 
@@ -77,14 +86,14 @@ async function uploadToDa(contentPath, target, token, skipAssets) {
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`aem-import-helper failed. Error: ${errorOutput}`));
+        reject(new Error(`sta-da-helper failed. Error: ${errorOutput}`));
       }
     });
   });
 }
 
 /**
- * Validate that the zip content contains what we expect, it should have a folder callled da,
+ * Validate that the zip content contains what we expect, it should have a folder called da,
  * and a file called asset-list.json.
  * @param {string} contentPath - The path to the zip content.
  * @returns {void} - Throws an error if the content is missing.

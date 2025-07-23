@@ -25,6 +25,7 @@ const uploadReport = {
   failures: 0,
   failedList: [],
   failedFolderCreations: 0,
+  lockedFiles: 0,
 };
 
 // Source structure for this invocation.  Global to simplify recursion.
@@ -55,8 +56,11 @@ async function graphFetch(token, endpoint, initOptions) {
   );
 
   if (!res.ok) {
+    // Count locked files if the response status is 423.
+    if (res.status === 423) {
+      uploadReport.lockedFiles += 1;
+    }
     const errorText = await res.text();
-    core.warning(`Graph API error ${res.status}: ${errorText}`);
     throw new Error(`Graph API error ${res.status}: ${errorText}`);
   }
 
@@ -70,7 +74,7 @@ async function graphFetch(token, endpoint, initOptions) {
  * @param {string} folderId Destination folder id within the drive id root
  * @param {Object.<string, string, string>} file The file name, full local and relative
  *                                               target path of the file to be uploaded.
- * @returns {Promise<boolean>}
+ * @returns {Promise<boolean>} The result of the upload operation.
  */
 async function uploadFile(accessToken, driveId, folderId, file) {
   const fileStream = fs.createReadStream(file.path);
@@ -79,7 +83,7 @@ async function uploadFile(accessToken, driveId, folderId, file) {
   core.debug(`Uploading ${file.path} with mime type ${mimeType}`);
 
   try {
-    const response = await graphFetch(
+    await graphFetch(
       accessToken,
       `/drives/${driveId}/items/${folderId}:${file.relative}:/content`,
       {
@@ -95,8 +99,7 @@ async function uploadFile(accessToken, driveId, folderId, file) {
     );
 
     core.debug(`File ${file.path} uploaded successfully.`);
-
-    return !!response;
+    return true;
   } catch (error) {
     core.warning(`Failed to upload file ${file.path}: ${error.message}`);
   }
@@ -298,6 +301,7 @@ export async function run() {
     core.setOutput('upload_list', String(uploadReport.uploadList.join(', ')));
     core.setOutput('upload_failures', String(uploadReport.failures));
     core.setOutput('upload_failed_list', uploadReport.failedList.join(', '));
+    core.setOutput('upload_failed_locked', String(uploadReport.lockedFiles));
     if (uploadReport.failures > 0 || uploadReport.failedList.length > 0) {
       core.setOutput('error_message', '❌ Upload Error: Some uploads failed. Check the workflow for more details.');
     }

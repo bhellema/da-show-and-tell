@@ -296,7 +296,11 @@ jobs:
           echo "Message: ${{ steps.upload-sharepoint.outputs.error_message }}"
           
           if [ "${{ steps.upload-sharepoint.outputs.upload_failures }}" != "0" ]; then
-            message="Failed to upload ${{ steps.upload-sharepoint.outputs.upload_failures }} files. Uploaded ${{ steps.upload-sharepoint.outputs.upload_successes }} files successfully. ${{ env.ACTION_URL }}"
+            if [ "${{ steps.upload-sharepoint.outputs.upload_failed_locked }}" != "0" ]; then
+              message="Failed to upload ${{ steps.upload-sharepoint.outputs.upload_failures }} file(s), ${{ steps.upload-sharepoint.outputs.upload_failed_locked }} of which were locked on SharePoint (HINT: If you have these files open for editing, close them and try again.)JS_LFUploaded ${{ steps.upload-sharepoint.outputs.upload_successes }} files successfully. ${{ env.ACTION_URL }}"
+            else
+              message="Failed to upload ${{ steps.upload-sharepoint.outputs.upload_failures }} file(s).JS_LFUploaded ${{ steps.upload-sharepoint.outputs.upload_successes }} files successfully. ${{ env.ACTION_URL }}"
+            fi
             echo "errorMessage=$message" >> $GITHUB_ENV
           fi
 
