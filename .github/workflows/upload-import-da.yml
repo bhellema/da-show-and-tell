@@ -74,7 +74,7 @@ jobs:
             preview_operation='preview and publish'
           fi
           echo "total_steps=$total_steps" >> $GITHUB_ENV
-          echo "preview_operation=$preview_operation" >> $GIFull pathTHUB_ENV
+          echo "preview_operation=$preview_operation" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
