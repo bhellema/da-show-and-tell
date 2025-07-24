@@ -147,7 +147,6 @@ export async function doPreviewPublish(pages, operation, context) {
     : HELIX_API_PREFIX.LIVE;
 
   const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
-  const urlsToProcess = pages.split(',').map((url) => url.trim());
 
   // keep track of the number of successes and failures
   const report = {
@@ -159,13 +158,13 @@ export async function doPreviewPublish(pages, operation, context) {
     },
   };
 
-  for (const url of urlsToProcess) {
-    const result = await performPreviewPublish(apiEndpoint, url);
+  for (const page of pages) {
+    const result = await performPreviewPublish(apiEndpoint, page);
     if (result) {
       report.successes += 1;
     } else {
       report.failures += 1;
-      report.failureList[action].push(url);
+      report.failureList[action].push(page);
     }
   }
 
