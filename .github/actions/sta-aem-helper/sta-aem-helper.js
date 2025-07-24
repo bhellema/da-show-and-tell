@@ -14,7 +14,7 @@ import core from '@actions/core';
 import fs from 'fs';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import jwt from 'jsonwebtoken';
-import { OPERATIONS } from './sta-aem-helper-constants.js';
+import { AEM_HELPER_OPERATIONS } from './sta-aem-helper-constants.js';
 import { doPreviewPublish } from './aem-preview-publish.js';
 
 /**
@@ -207,11 +207,11 @@ async function run() {
   try {
     const operation = core.getInput('operation');
 
-    if (operation === OPERATIONS.FETCH_ACCESS_TOKEN) {
+    if (operation === AEM_HELPER_OPERATIONS.FETCH_ACCESS_TOKEN) {
       const credentialsPath = core.getInput('credentials_path');
       doFetchAccessToken(credentialsPath);
-    } else if (operation === OPERATIONS.PREVIEW_PAGES
-      || operation === OPERATIONS.PREVIEW_AND_PUBLISH) {
+    } else if (operation === AEM_HELPER_OPERATIONS.PREVIEW_PAGES
+      || operation === AEM_HELPER_OPERATIONS.PREVIEW_AND_PUBLISH) {
       const pagesInput = core.getInput('pages');
       const context = core.getInput('context');
       const pages = JSON.parse(pagesInput);

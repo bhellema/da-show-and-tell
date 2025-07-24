@@ -13,7 +13,7 @@
 import core from '@actions/core';
 import path from 'path';
 
-import { OPERATIONS } from './sta-aem-helper-constants.js';
+import { AEM_HELPER_OPERATIONS } from './sta-aem-helper-constants.js';
 
 /**
  * The publish or preview endpoint prefix for the HLX Admin API.
@@ -35,9 +35,9 @@ const HELIX_ENDPOINT = 'https://admin.hlx.page';
  */
 const getOperationName = (operation) => {
   switch (operation) {
-    case OPERATIONS.PREVIEW_PAGES:
+    case AEM_HELPER_OPERATIONS.PREVIEW_PAGES:
       return 'preview';
-    case OPERATIONS.PREVIEW_AND_PUBLISH:
+    case AEM_HELPER_OPERATIONS.PREVIEW_AND_PUBLISH:
       return 'preview and/or publish';
     default:
       return 'unknown';
@@ -85,7 +85,7 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
 
   const page = fixPathForHelix(pagePath);
 
-  core.info(`Prev/Pub: to ${apiEndpoint} with page ${page}`);
+  core.info(`Prev/Pub: to ${apiEndpoint}${page}`);
 
   try {
     const resp = await fetch(`${apiEndpoint}${page}`, {
@@ -130,7 +130,10 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
 }
 
 /**
- * Performs the preview or publish pages operation and sets the outputs.
+ * Performs the preview or publish pages operation for the provided pages.
+ * Pages are expected to be an array of strings in the format of ['/index.html', '/a/file.xlsx']
+ * The operation is expected to be one of the OPERATIONS constants.
+ * 
  * @param {string} pages - The URLs to preview or publish.
  * @param {string} operation - The operation to perform.
  * @param {string} context - The AEMY context.
@@ -155,18 +158,16 @@ export async function doPreviewPublish(pages, operation, context, token) {
     },
   };
 
-  // if operation is OPERATIONS.PREVIEW_AND_PUBLISH we need to process the pages twice
-  const loops = operation === OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1;
+  // if operation is OPERATIONS.PREVIEW_AND_PUBLISH we need to process 
+  // the pages once for preview and once for publish
+  const loops = operation === AEM_HELPER_OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1;
   for (let i = 0; i < loops; i++) {
-    // always preview first, then publish
     const action = [i === 0 ? HELIX_API_PREFIX.PREVIEW : HELIX_API_PREFIX.LIVE];
     const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
-
     for (const page of pages) {
       const result = await performPreviewPublish(apiEndpoint, page, token);
       if (result) {
         report.successes += 1;
-        core.info(`Increased successes to: ${report.successes}`);
       } else {
         report.failures += 1;
         report.failureList[action].push(page);
@@ -181,7 +182,7 @@ export async function doPreviewPublish(pages, operation, context, token) {
     core.warning(`❌ The pages that failed are: ${JSON.stringify(report.failureList, undefined, 2)}`);
     core.setOutput('error_message', `❌ Error: Failed to ${getOperationName(operation)}]} ${report.failures} of ${pages.length} pages.`);
     // eslint-disable-next-line max-len
-  } else if (((operation === OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1) * pages.length) !== report.successes) {
+  } else if (((operation === AEM_HELPER_OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1) * pages.length) !== report.successes) {
     core.warning(`❌ The paths that failed are: ${JSON.stringify(report.failureList, undefined, 2)}`);
     core.setOutput('error_message', `❌ Error: Failed to ${getOperationName(operation)} all of the paths.`);
   }

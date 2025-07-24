@@ -13,7 +13,7 @@
 /**
  * The operations that can be performed by the AEM helper.
  */
-export const OPERATIONS = Object.freeze({
+export const AEM_HELPER_OPERATIONS = Object.freeze({
   FETCH_ACCESS_TOKEN: 'fetch-access-token',
   PREVIEW_PAGES: 'preview',
   PREVIEW_AND_PUBLISH: 'previewAndPublish',
