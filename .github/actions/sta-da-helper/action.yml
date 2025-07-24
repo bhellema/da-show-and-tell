@@ -16,6 +16,9 @@ inputs:
     description: "The operation to perform"
     required: false
     default: upload
+outputs:
+  paths:
+    description: "The list of paths that were uploaded"
 runs:
   using: 'node20'
   main: 'sta-da-helper.js'
