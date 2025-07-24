@@ -92,7 +92,7 @@ jobs:
           cd ..
           npm install @adobe/aem-import-helper
 
-      - name: Report if inputs are invalid
+      - name: [Check] Validation of inputs
         if: ${{ env.errorMessage != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -102,7 +102,7 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: Progress 1 - Setup
+      - name: [Progress] Validation of inputs
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
@@ -111,7 +111,7 @@ jobs:
           status_type: progress
           agent_name: upload-import-da
 
-      - name: Progress 2 - Extracting zip
+      - name: [Progress] Downloading and extracting import zip file
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
@@ -126,7 +126,7 @@ jobs:
         with:
           download_url: ${{ github.event.inputs.zip_url }}
 
-      - name: Report if zip management failed
+      - name: [Check] If there was issues with the zip fetch/extraction process
         if: ${{ steps.download-zip.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -136,7 +136,7 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: Progress 3 - Initiating da upload
+      - name: [Progress] Uploading pages to DA
         if: ${{ steps.download-zip.outputs.temp_dir != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -146,7 +146,7 @@ jobs:
           status_type: progress
           agent_name: upload-import-da
 
-      - name: Run DA upload action
+      - name: Perform upload of pages to DA
         id: da-upload-step
         uses: ./.github/actions/sta-da-helper
         with:
@@ -155,7 +155,7 @@ jobs:
             content_path: ${{ steps.download-zip.outputs.temp_dir }}/contents
             operation: upload       
 
-      - name: Report if upload failed
+      - name: [Check] if upload of pages to DA failed
         if: ${{ steps.da-upload-step.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -165,16 +165,16 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: Report upload success
+      - name: [Progress] upload success
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: DA upload succeeded. (Step 5 of ${{ env.total_steps }}).
-          status_type: ok
+          message: DA upload succeeded. (Step 5 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
+          status_type: progress
           agent_name: upload-import-da
 
-      - name: Preview Publish
+      - name: [Progress] perform preview and publish
         if: ${{ env.preview_operation != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -184,7 +184,7 @@ jobs:
           status_type: progress
           agent_name: upload-import-da
 
-      - name: Preview/Publish Content
+      - name: Preview and publish of pages to DA
         id: preview-publish-content
         if: ${{ env.preview_operation != '' }}
         uses: ./.github/actions/sta-aem-helper
@@ -193,7 +193,7 @@ jobs:
           pages: ${{ steps.da-upload-step.outputs.paths }}
           operation: ${{ github.event.inputs.previewAndPublish == 'true' && 'previewAndPublish' || 'preview' }}
 
-      - name: Report if preview/publish has an error
+      - name: [Check] Did preview/publish have any errors?
         if: ${{ steps.preview-publish-content.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -203,13 +203,13 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: Report Preview/Publish Success
+      - name: [Done] The success of the preview and publish operation
         if: ${{ env.preview_operation != '' }}
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: ${{ env.preview_operation }} succeeded ${{ steps.preview-publish-content.outputs.successes }} times in total.
+          message: ${{ env.preview_operation }} executed successfully ${{ steps.preview-publish-content.outputs.successes }} times.
           status_type: ok
           agent_name: upload-import-da
 
