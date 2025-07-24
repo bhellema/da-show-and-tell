@@ -142,12 +142,6 @@ export async function doPreviewPublish(pages, operation, context) {
     throw new Error('Invalid context format: missing owner or repo.');
   }
 
-  const action = operation === OPERATIONS.PREVIEW_PAGES
-    ? HELIX_API_PREFIX.PREVIEW
-    : HELIX_API_PREFIX.LIVE;
-
-  const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
-
   // keep track of the number of successes and failures
   const report = {
     successes: 0,
@@ -158,13 +152,22 @@ export async function doPreviewPublish(pages, operation, context) {
     },
   };
 
-  for (const page of pages) {
-    const result = await performPreviewPublish(apiEndpoint, page);
-    if (result) {
-      report.successes += 1;
-    } else {
-      report.failures += 1;
-      report.failureList[action].push(page);
+  // if operation is OPERATIONS.PREVIEW_AND_PUBLISH we need to process the pages twice
+  const loops = operation === OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1;
+  for (let i = 0; i < loops; i++) {
+    // always preview first, then publish
+    const action = [i === 0 ? HELIX_API_PREFIX.PREVIEW : HELIX_API_PREFIX.LIVE];
+    const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
+
+    for (const page of pages) {
+      const result = await performPreviewPublish(apiEndpoint, page);
+      if (result) {
+        report.successes += 1;
+        core.info(`Increased successes to: ${report.successes}`);
+      } else {
+        report.failures += 1;
+        report.failureList[action].push(page);
+      }
     }
   }
 
