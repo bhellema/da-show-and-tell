@@ -92,7 +92,7 @@ jobs:
           cd ..
           npm install @adobe/aem-import-helper
 
-      - name: [Check] Validation of inputs
+      - name: '[Check] Validation of inputs'
         if: ${{ env.errorMessage != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -102,7 +102,7 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: [Progress] Validation of inputs
+      - name: '[Progress] Validation of inputs'
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
@@ -111,7 +111,7 @@ jobs:
           status_type: progress
           agent_name: upload-import-da
 
-      - name: [Progress] Downloading and extracting import zip file
+      - name: '[Progress] Downloading and extracting import zip file'
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
@@ -126,7 +126,7 @@ jobs:
         with:
           download_url: ${{ github.event.inputs.zip_url }}
 
-      - name: [Check] If there was issues with the zip fetch/extraction process
+      - name: '[Check] If there was issues with the zip fetch/extraction process'
         if: ${{ steps.download-zip.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -136,7 +136,7 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: [Progress] Uploading pages to DA
+      - name: '[Progress] Uploading pages to DA'
         if: ${{ steps.download-zip.outputs.temp_dir != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -155,7 +155,7 @@ jobs:
             content_path: ${{ steps.download-zip.outputs.temp_dir }}/contents
             operation: upload       
 
-      - name: [Check] if upload of pages to DA failed
+      - name: '[Check] if upload of pages to DA failed'
         if: ${{ steps.da-upload-step.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -165,7 +165,7 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: [Progress] upload success
+      - name: '[Progress] upload success'
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
@@ -174,7 +174,7 @@ jobs:
           status_type: progress
           agent_name: upload-import-da
 
-      - name: [Progress] perform preview and publish
+      - name: '[Progress] perform preview and publish'
         if: ${{ env.preview_operation != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -193,7 +193,7 @@ jobs:
           pages: ${{ steps.da-upload-step.outputs.paths }}
           operation: ${{ github.event.inputs.previewAndPublish == 'true' && 'previewAndPublish' || 'preview' }}
 
-      - name: [Check] Did preview/publish have any errors?
+      - name: '[Check] Did preview/publish have any errors?'
         if: ${{ steps.preview-publish-content.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -203,7 +203,7 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: [Done] The success of the preview and publish operation
+      - name: '[Done] The success of the preview and publish operation' 
         if: ${{ env.preview_operation != '' }}
         uses: ./.github/actions/sta-status
         with:
