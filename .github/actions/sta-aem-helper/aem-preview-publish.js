@@ -56,8 +56,6 @@ const fixPathForHelix = (filePath, force = false) => {
 
   // HTML for DA
   // DOCS for Sharepoint
-  core.info(`filePath to fix: ${filePath}`);
-
   if (force
     || filePath.endsWith('.docx')
     || filePath.endsWith('.html')) {
