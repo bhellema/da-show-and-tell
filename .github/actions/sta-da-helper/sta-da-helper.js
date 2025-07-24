@@ -95,13 +95,8 @@ async function uploadToDa(contentPath, target, token, skipAssets) {
           .filter((entry) => entry.isFile())
           .map((entry) => {
             const fullPath = path.join(entry.parentPath, entry.name);
-            core.info(`Full path: ${fullPath}`);
-            const fixedPath = `/${fullPath.replace(/^.*?da\//, '')}`;
-            core.info(`Fixed path: ${fixedPath}`);
-            return fixedPath;
+            return `/${fullPath.replace(/^.*?da\//, '')}`;
           });
-
-        core.info(`Found ${paths.length} files in/under ${contentPath}/da`);
         resolve(paths);
       } else {
         reject(new Error(`sta-da-helper failed. Error: ${errorOutput}`));

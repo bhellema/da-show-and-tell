@@ -74,12 +74,12 @@ jobs:
             preview_operation='preview and publish'
           fi
           echo "total_steps=$total_steps" >> $GITHUB_ENV
-          echo "preview_operation=$preview_operation" >> $GITHUB_ENV
+          echo "preview_operation=$preview_operation" >> $GIFull pathTHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up actions
+      - name: '[Setup]'
         run: |
           cd .github/actions/sta-status
           npm install

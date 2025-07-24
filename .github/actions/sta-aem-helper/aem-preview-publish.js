@@ -85,8 +85,6 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
 
   const page = fixPathForHelix(pagePath);
 
-  core.info(`Prev/Pub: to ${apiEndpoint}${page}`);
-
   try {
     const resp = await fetch(`${apiEndpoint}${page}`, {
       method: 'POST',
@@ -120,7 +118,7 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
     }
 
     const data = await resp.json();
-    core.info(`✓ Operation successful on ${page}: ${data[action].url}`);
+    core.info(`✓ Prev/Pub success: for ${apiEndpoint}${page}`);
     return true;
   } catch (error) {
     core.warning(`❌ Operation call failed on ${page}: ${error.message}`);
