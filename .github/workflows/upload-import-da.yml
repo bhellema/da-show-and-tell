@@ -5,7 +5,7 @@ description: |
   The action is triggered by a workflow dispatch event with inputs as follows.
 
 env:
-  USER_TOKEN: ${{ secrets.DA_UPLOAD_TOKEN }}
+  IMS_TOKEN: ${{ secrets.IMS_TOKEN }}
   AEMY_API_KEY: ${{ secrets.AEMY_API_KEY }}
 on:
   workflow_dispatch:
@@ -63,16 +63,19 @@ jobs:
             echo "errorMessage=$errorMessage" >> $GITHUB_ENV
           fi
 
-          total_steps=5
+          total_steps=4
           preview_operation=''
+
           if ${{ github.event.inputs.preview == 'true' }}; then
-            total_steps=6
+            total_steps=5
             preview_operation='preview'
           fi
+
           if ${{ github.event.inputs.previewAndPublish == 'true' }}; then
-            total_steps=6
+            total_steps=5
             preview_operation='preview and publish'
           fi
+
           echo "total_steps=$total_steps" >> $GITHUB_ENV
           echo "preview_operation=$preview_operation" >> $GITHUB_ENV
 
@@ -102,25 +105,16 @@ jobs:
           status_type: error
           agent_name: upload-import-da
 
-      - name: '[Progress] Validation of inputs'
+      - name: '[Progress] Downloading and extracting zip file'
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Inputs look good. Now setting up the upload. (Step 1 of ${{ env.total_steps }}).
+          message: Downloading and extracting content from zip... (Step 1 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
           status_type: progress
           agent_name: upload-import-da
 
-      - name: '[Progress] Downloading and extracting import zip file'
-        uses: ./.github/actions/sta-status
-        with:
-          callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
-          context: ${{ github.event.inputs.aemy_context }}
-          message: Downloading and extracting content from the Import zip... (Step 2 of ${{ env.total_steps }}).
-          status_type: progress
-          agent_name: upload-import-da
-
-      - name: Download and extract import zip file
+      - name: Downloading and extracting zip file
         id: download-zip
         uses: ./.github/actions/sta-import-zip
         with:
@@ -137,16 +131,15 @@ jobs:
           agent_name: upload-import-da
 
       - name: '[Progress] Uploading pages to DA'
-        if: ${{ steps.download-zip.outputs.temp_dir != '' }}
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files. Initiating upload... (Step 3 of ${{ env.total_steps }}).
+          message: Zip extracted with ${{ steps.download-zip.outputs.file_count }} files. Initiating upload... (Step 2 of ${{ env.total_steps }}).
           status_type: progress
           agent_name: upload-import-da
 
-      - name: Perform upload of pages to DA
+      - name: Uploading pages to DA
         id: da-upload-step
         uses: ./.github/actions/sta-da-helper
         with:
@@ -155,36 +148,27 @@ jobs:
             content_path: ${{ steps.download-zip.outputs.temp_dir }}/contents
             operation: upload       
 
-      - name: '[Check] if upload of pages to DA failed'
+      - name: '[Check] Uploading pages to DA'
         if: ${{ steps.da-upload-step.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: ${{ steps.da-upload-step.outputs.error_message }} (Step 4 of ${{ env.total_steps }}) ${{ env.ACTION_URL }} 
+          message: ${{ steps.da-upload-step.outputs.error_message }} (Step 3 of ${{ env.total_steps }}) ${{ env.ACTION_URL }} 
           status_type: error
           agent_name: upload-import-da
 
-      - name: '[Progress] upload success'
-        uses: ./.github/actions/sta-status
-        with:
-          callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
-          context: ${{ github.event.inputs.aemy_context }}
-          message: DA upload succeeded. (Step 5 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
-          status_type: progress
-          agent_name: upload-import-da
-
-      - name: '[Progress] perform preview and publish'
+      - name: '[Progress] Preview and publish'
         if: ${{ env.preview_operation != '' }}
         uses: ./.github/actions/sta-status
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Now performing ${{ env.preview_operation }} (Step 6 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
+          message: Now performing ${{ env.preview_operation }} (Step 5 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
           status_type: progress
           agent_name: upload-import-da
 
-      - name: Preview and publish of pages to DA
+      - name: Preview and publish
         id: preview-publish-content
         if: ${{ env.preview_operation != '' }}
         uses: ./.github/actions/sta-aem-helper
@@ -193,7 +177,7 @@ jobs:
           pages: ${{ steps.da-upload-step.outputs.paths }}
           operation: ${{ github.event.inputs.previewAndPublish == 'true' && 'previewAndPublish' || 'preview' }}
 
-      - name: '[Check] Did preview/publish have any errors?'
+      - name: '[Check] Preview and publish'
         if: ${{ steps.preview-publish-content.outputs.error_message != '' }}
         uses: ./.github/actions/sta-status
         with:
@@ -210,6 +194,16 @@ jobs:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
           message: ${{ env.preview_operation }} executed successfully ${{ steps.preview-publish-content.outputs.successes }} times.
+          status_type: ok
+          agent_name: upload-import-da
+
+      - name: '[Done] Completed upload to DA' 
+        if: ${{ env.preview_operation == '' }}
+        uses: ./.github/actions/sta-status
+        with:
+          callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
+          context: ${{ github.event.inputs.aemy_context }}
+          message: Upload to DA completed successfully.
           status_type: ok
           agent_name: upload-import-da
 
