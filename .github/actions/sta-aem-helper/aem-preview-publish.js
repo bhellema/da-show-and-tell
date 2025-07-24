@@ -84,7 +84,7 @@ async function performPreviewPublish(apiEndpoint, pagePath) {
 
   const page = fixPathForHelix(pagePath);
 
-  core.info(`Performing ${action} operation on ${page}`);
+  core.info(`Prev/Pub: to ${apiEndpoint} with page ${page}`);
 
   try {
     const resp = await fetch(`${apiEndpoint}${page}`, {
