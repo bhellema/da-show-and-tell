@@ -212,9 +212,10 @@ async function run() {
       doFetchAccessToken(credentialsPath);
     } else if (operation === OPERATIONS.PREVIEW_PAGES
       || operation === OPERATIONS.PREVIEW_AND_PUBLISH) {
-      const urls = core.getInput('pages');
+      const pagesInput = core.getInput('pages');
       const context = core.getInput('context');
-      await doPreviewPublish(urls, operation, context);
+      const pages = JSON.parse(pagesInput);
+      await doPreviewPublish(pages, operation, context);
     } else {
       throw new Error(`Unknown AEM helper operation: ${operation}`);
     }
