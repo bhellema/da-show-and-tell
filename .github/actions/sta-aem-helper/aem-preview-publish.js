@@ -89,14 +89,12 @@ async function performPreviewPublish(apiEndpoint, pagePath) {
   try {
     const resp = await fetch(`${apiEndpoint}${page}`, {
       method: 'POST',
+      body: '{}',
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Expose-Headers': 'x-error',
       },
     });
-
-    // set a delay of 30 seconds
-    await new Promise((resolve) => setTimeout(resolve, 30000));
 
     if (!resp.ok) {
       const xError = resp.headers.get('x-error');
@@ -162,6 +160,9 @@ export async function doPreviewPublish(pages, operation, context) {
     const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
 
     for (const page of pages) {
+      // set a delay of 30 seconds
+      await new Promise((resolve) => setTimeout(resolve, 30000));
+
       const result = await performPreviewPublish(apiEndpoint, page);
       if (result) {
         report.successes += 1;
