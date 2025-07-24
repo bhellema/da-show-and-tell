@@ -153,7 +153,7 @@ export async function run() {
     const skipAssets = core.getInput('skip_assets') || false;
 
     // the token to use to upload to DA
-    const token = process.env.USER_TOKEN;
+    const token = process.env.IMS_TOKEN;
 
     try {
       checkForRequiredContent(contentPath);

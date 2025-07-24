@@ -216,7 +216,7 @@ async function run() {
       const context = core.getInput('context');
       const pages = JSON.parse(pagesInput);
 
-      const token = process.env.USER_TOKEN;
+      const token = process.env.IMS_TOKEN;
       await doPreviewPublish(pages, operation, context, token);
     } else {
       throw new Error(`Unknown AEM helper operation: ${operation}`);
