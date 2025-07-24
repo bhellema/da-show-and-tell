@@ -101,7 +101,7 @@ async function uploadToDa(contentPath, target, token, skipAssets) {
       .map((entry) => {
         const fullPath = path.join(entry.parentPath, entry.name);
         core.info(`Full path: ${fullPath}`);
-        const fixedPath = `${fullPath.replace(/^da/, '')}`;
+        const fixedPath = fullPath.replace(/^.*?da\//, '');
         core.info(`Fixed path: ${fixedPath}`);
         return fixedPath;
       });
