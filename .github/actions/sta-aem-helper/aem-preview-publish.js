@@ -163,9 +163,6 @@ export async function doPreviewPublish(pages, operation, context, token) {
     const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
 
     for (const page of pages) {
-      // set a delay of 30 seconds
-      await new Promise((resolve) => setTimeout(resolve, 30000));
-
       const result = await performPreviewPublish(apiEndpoint, page, token);
       if (result) {
         report.successes += 1;
