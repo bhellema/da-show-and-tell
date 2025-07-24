@@ -5,7 +5,7 @@ description: |
   The action is triggered by a workflow dispatch event with inputs as follows.
 
 env:
-  DA_UPLOAD_TOKEN: ${{ secrets.DA_UPLOAD_TOKEN }}
+  USER_TOKEN: ${{ secrets.DA_UPLOAD_TOKEN }}
   AEMY_API_KEY: ${{ secrets.AEMY_API_KEY }}
 on:
   workflow_dispatch:

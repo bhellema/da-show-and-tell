@@ -73,9 +73,10 @@ const fixPathForHelix = (filePath, force = false) => {
  *
  * @param {string} apiEndpoint - The API endpoint to call.
  * @param {string} pagePath - The page path to preview or publish. /some/page.docx
+ * @param {string} token - The DA access token.
  * @returns {Promise<boolean>} - Returns true if successful, false otherwise.
  */
-async function performPreviewPublish(apiEndpoint, pagePath) {
+async function performPreviewPublish(apiEndpoint, pagePath, token) {
   const action = new URL(apiEndpoint)
     .pathname
     .startsWith('/preview/')
@@ -91,6 +92,7 @@ async function performPreviewPublish(apiEndpoint, pagePath) {
       method: 'POST',
       body: '{}',
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         'Access-Control-Expose-Headers': 'x-error',
       },
@@ -132,9 +134,10 @@ async function performPreviewPublish(apiEndpoint, pagePath) {
  * @param {string} pages - The URLs to preview or publish.
  * @param {string} operation - The operation to perform.
  * @param {string} context - The AEMY context.
+ * @param {string} token - The DA access token.
  * @throws {Error} - If the operation fails.
  */
-export async function doPreviewPublish(pages, operation, context) {
+export async function doPreviewPublish(pages, operation, context, token) {
   const { project } = JSON.parse(context);
   const { owner, repo, branch = 'main' } = project;
 
@@ -163,7 +166,7 @@ export async function doPreviewPublish(pages, operation, context) {
       // set a delay of 30 seconds
       await new Promise((resolve) => setTimeout(resolve, 30000));
 
-      const result = await performPreviewPublish(apiEndpoint, page);
+      const result = await performPreviewPublish(apiEndpoint, page, token);
       if (result) {
         report.successes += 1;
         core.info(`Increased successes to: ${report.successes}`);
