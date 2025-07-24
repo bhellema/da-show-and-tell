@@ -125,12 +125,12 @@ async function performPreviewPublish(apiEndpoint, pagePath) {
 
 /**
  * Performs the preview or publish pages operation and sets the outputs.
- * @param {string} urls - The URLs to preview or publish.
+ * @param {string} pages - The URLs to preview or publish.
  * @param {string} operation - The operation to perform.
  * @param {string} context - The AEMY context.
  * @throws {Error} - If the operation fails.
  */
-export async function doPreviewPublish(urls, operation, context) {
+export async function doPreviewPublish(pages, operation, context) {
   const { project } = JSON.parse(context);
   const { owner, repo, branch = 'main' } = project;
 
@@ -143,7 +143,7 @@ export async function doPreviewPublish(urls, operation, context) {
     : HELIX_API_PREFIX.LIVE;
 
   const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
-  const urlsToProcess = urls.split(',').map((url) => url.trim());
+  const urlsToProcess = pages.split(',').map((url) => url.trim());
 
   // keep track of the number of successes and failures
   const report = {

@@ -212,7 +212,7 @@ async function run() {
       doFetchAccessToken(credentialsPath);
     } else if (operation === OPERATIONS.PREVIEW_PAGES
       || operation === OPERATIONS.PREVIEW_AND_PUBLISH) {
-      const urls = core.getInput('urls');
+      const urls = core.getInput('pages');
       const context = core.getInput('context');
       await doPreviewPublish(urls, operation, context);
     } else {
