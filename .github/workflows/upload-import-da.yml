@@ -190,7 +190,7 @@ jobs:
         uses: ./.github/actions/sta-aem-helper
         with:
           context: ${{ github.event.inputs.aemy_context }}
-          urls: ${{ steps.upload-sharepoint.outputs.upload_list }}
+          paths: ${{ steps.da-upload-step.outputs.paths }}
           operation: ${{ github.event.inputs.previewAndPublish == 'true' && 'previewAndPublish' || 'preview' }}
 
       - name: Report if preview/publish has an error

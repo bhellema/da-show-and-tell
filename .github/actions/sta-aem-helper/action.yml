@@ -7,8 +7,8 @@ inputs:
     required: true
   credentials_path:
     description: "The decoded credentials in a JSON string."
-  urls:
-    description: "The relative page url paths to preview or publish."
+  paths:
+    description: "The paths to preview or publish."
   context:
     description: "The AEMY context."
 outputs:

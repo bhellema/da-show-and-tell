@@ -45,7 +45,7 @@ function getOrgAndSiteFromTargetUrl(target) {
  * @param {string} target - The target URL (DA URL).
  * @param {string} token - The token to use to upload to DA.
  * @param {boolean} skipAssets - Whether to skip assets.
- * @returns {Promise<void>} - Resolves when the upload is complete.
+ * @returns {Promise<string[]>} - Returns the list of files that were uploaded.
  * @throws {Error} - If the upload fails.
  */
 async function uploadToDa(contentPath, target, token, skipAssets) {
@@ -89,6 +89,27 @@ async function uploadToDa(contentPath, target, token, skipAssets) {
         reject(new Error(`sta-da-helper failed. Error: ${errorOutput}`));
       }
     });
+
+    // now that our upload was complete, collect all files recursively from the ${contentPath}/da
+    const entries = fs.readdirSync(path.join(contentPath, 'da'), {
+      recursive: true,
+      withFileTypes: true,
+    });
+
+    const paths = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => {
+        const fullPath = path.join(entry.parentPath, entry.name);
+        core.info(`Full path: ${fullPath}`);
+        const fixedPath = `${fullPath.replace(/^da/, '')}`;
+        core.info(`Fixed path: ${fixedPath}`);
+        return fixedPath;
+      });
+
+    core.info(`Found ${paths.length} files in/under ${contentPath}/da`);
+
+    // return all the files that were uploaded
+    resolve(paths);
   });
 }
 
@@ -112,9 +133,20 @@ function checkForRequiredContent(contentPath) {
 }
 
 /**
- * Get the site and drive ID for a SharePoint site.
- * @returns {Promise<void>}
- */
+* Main function for the GitHub Action.
+*
+* Depending on the provided operation, different outputs are set:
+* All operations can set the error_message output.
+*
+* |---------------------------------------------------------------------|
+* | operation          | output                                         |
+* |---------------------------------------------------------------------|
+* | upload             | paths - the list of files that were uploaded   |
+* |---------------------------------------------------------------------|
+* |  *                 | error_message - string describing the error    |
+* |---------------------------------------------------------------------|
+*
+*/
 export async function run() {
   const operation = core.getInput('operation');
 
@@ -133,7 +165,8 @@ export async function run() {
 
     try {
       checkForRequiredContent(contentPath);
-      await uploadToDa(contentPath, target, token, skipAssets);
+      const files = await uploadToDa(contentPath, target, token, skipAssets);
+      core.setOutput('paths', files);
     } catch (error) {
       core.error(`DA Error: ${error.message}`);
       core.setOutput('error_message', `❌ Error during DA upload: ${error.message}`);
