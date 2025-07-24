@@ -84,32 +84,29 @@ async function uploadToDa(contentPath, target, token, skipAssets) {
 
     child.on('exit', (code) => {
       if (code === 0) {
-        resolve();
+        // now that our upload was complete, collect all files
+        // recursively from the ${contentPath}/da
+        const entries = fs.readdirSync(path.join(contentPath, 'da'), {
+          recursive: true,
+          withFileTypes: true,
+        });
+
+        const paths = entries
+          .filter((entry) => entry.isFile())
+          .map((entry) => {
+            const fullPath = path.join(entry.parentPath, entry.name);
+            core.info(`Full path: ${fullPath}`);
+            const fixedPath = `/${fullPath.replace(/^.*?da\//, '')}`;
+            core.info(`Fixed path: ${fixedPath}`);
+            return fixedPath;
+          });
+
+        core.info(`Found ${paths.length} files in/under ${contentPath}/da`);
+        resolve(paths);
       } else {
         reject(new Error(`sta-da-helper failed. Error: ${errorOutput}`));
       }
     });
-
-    // now that our upload was complete, collect all files recursively from the ${contentPath}/da
-    const entries = fs.readdirSync(path.join(contentPath, 'da'), {
-      recursive: true,
-      withFileTypes: true,
-    });
-
-    const paths = entries
-      .filter((entry) => entry.isFile())
-      .map((entry) => {
-        const fullPath = path.join(entry.parentPath, entry.name);
-        core.info(`Full path: ${fullPath}`);
-        const fixedPath = fullPath.replace(/^.*?da\//, '');
-        core.info(`Fixed path: ${fixedPath}`);
-        return fixedPath;
-      });
-
-    core.info(`Found ${paths.length} files in/under ${contentPath}/da`);
-
-    // return all the files that were uploaded
-    resolve(paths);
   });
 }
 
