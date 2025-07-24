@@ -172,10 +172,10 @@ export async function doPreviewPublish(pages, operation, context) {
   core.setOutput('failures', report.failures);
 
   if (report.failures > 0) {
-    core.warning(`❌ The paths that failed are: ${JSON.stringify(report.failureList, undefined, 2)}`);
-    core.setOutput('error_message', `❌ Error: Failed to ${getOperationName(operation)}]} ${report.failures} of ${urlsToProcess.length} paths.`);
+    core.warning(`❌ The pages that failed are: ${JSON.stringify(report.failureList, undefined, 2)}`);
+    core.setOutput('error_message', `❌ Error: Failed to ${getOperationName(operation)}]} ${report.failures} of ${pages.length} pages.`);
     // eslint-disable-next-line max-len
-  } else if (((operation === OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1) * urlsToProcess.length) !== report.successes) {
+  } else if (((operation === OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1) * pages.length) !== report.successes) {
     core.warning(`❌ The paths that failed are: ${JSON.stringify(report.failureList, undefined, 2)}`);
     core.setOutput('error_message', `❌ Error: Failed to ${getOperationName(operation)} all of the paths.`);
   }
