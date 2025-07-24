@@ -80,6 +80,8 @@ async function performPreviewPublish(apiEndpoint, pagePath) {
 
   const page = fixPathForHelix(pagePath);
 
+  core.info(`Performing ${action} operation on ${page}`);
+
   try {
     const resp = await fetch(`${apiEndpoint}${page}`, {
       method: 'POST',
@@ -92,7 +94,7 @@ async function performPreviewPublish(apiEndpoint, pagePath) {
 
     if (!resp.ok) {
       const xError = resp.headers.get('x-error');
-      core.debug(`.${action} operation failed on ${page}: ${resp.status} : ${resp.statusText} : ${xError}`);
+      core.info(`.${action} operation failed on ${page}: ${resp.status} : ${resp.statusText} : ${xError}`);
 
       // Check for unsupported media type or 404, and try without an extension
       if (resp.status === 415 || (action === 'live' && resp.status === 404)) {
