@@ -84,14 +84,19 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
   const page = fixPathForHelix(pagePath);
 
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Access-Control-Expose-Headers': 'x-error',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const resp = await fetch(`${apiEndpoint}${page}`, {
       method: 'POST',
       body: '{}',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Access-Control-Expose-Headers': 'x-error',
-      },
+      headers,
     });
 
     if (!resp.ok) {
@@ -109,14 +114,22 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
         core.warning(`❌ Operation failed on extensionless ${page}: ${xError}`);
       } else if (resp.status === 423) {
         core.warning(`❌ Operation failed on ${page}. The file appears locked. Is it being edited? (${xError})`);
+      } else if (resp.status === 401) {
+        const notSet = token === '';
+        core.warning(`❌ Operation failed: ${notSet
+          ? 'The token is not set. Set IMS_TOKEN in the environment.'
+          : 'The token is invalid.'}`);
       } else {
         core.warning(`❌ Operation failed on ${page}: ${xError}`);
       }
       return false;
     }
 
-    const data = await resp.json();
-    core.info(`✓ Prev/Pub success: for ${apiEndpoint}${page}`);
+    if (action === HELIX_API_PREFIX.PREVIEW) {
+      core.info(`✓ Preview success: for ${apiEndpoint}${page}`);
+    } else {
+      core.info(`✓ Publish success: for ${apiEndpoint}${page}`);
+    }
     return true;
   } catch (error) {
     core.warning(`❌ Operation call failed on ${page}: ${error.message}`);
