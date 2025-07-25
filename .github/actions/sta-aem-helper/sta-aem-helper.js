@@ -12,7 +12,6 @@
 
 import core from '@actions/core';
 import fs from 'fs';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import jwt from 'jsonwebtoken';
 import { AEM_HELPER_OPERATIONS } from './sta-aem-helper-constants.js';
 import { doPreviewPublish } from './aem-preview-publish.js';
@@ -121,7 +120,7 @@ async function fetchJWTAuthAccessToken(config) {
     .then(({ ok, json }) => {
       const { access_token: accessToken, error, error_description: errorDescription } = json;
       if (ok && accessToken) {
-        return json;
+        return accessToken;
       }
 
       if (error && errorDescription) {
@@ -159,8 +158,7 @@ async function fetchAccessToken(credentialsPath) {
     ims: `https://${integration.imsEndpoint}`,
   };
 
-  const tokenResponse = await fetchJWTAuthAccessToken(config);
-  return tokenResponse?.access_token;
+  return fetchJWTAuthAccessToken(config);
 }
 
 /**
