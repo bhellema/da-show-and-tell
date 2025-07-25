@@ -90,7 +90,7 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
     };
 
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
 
     const resp = await fetch(`${apiEndpoint}${page}`, {
@@ -142,7 +142,7 @@ async function performPreviewPublish(apiEndpoint, pagePath, token) {
  * Performs the preview or publish pages operation for the provided pages.
  * Pages are expected to be an array of strings in the format of ['/index.html', '/a/file.xlsx']
  * The operation is expected to be one of the OPERATIONS constants.
- * 
+ *
  * @param {string} pages - The URLs to preview or publish.
  * @param {string} operation - The operation to perform.
  * @param {string} context - The AEMY context.
@@ -167,10 +167,10 @@ export async function doPreviewPublish(pages, operation, context, token) {
     },
   };
 
-  // if operation is OPERATIONS.PREVIEW_AND_PUBLISH we need to process 
+  // if operation is OPERATIONS.PREVIEW_AND_PUBLISH we need to process
   // the pages once for preview and once for publish
   const loops = operation === AEM_HELPER_OPERATIONS.PREVIEW_AND_PUBLISH ? 2 : 1;
-  for (let i = 0; i < loops; i++) {
+  for (let i = 0; i < loops; i += 1) {
     const action = [i === 0 ? HELIX_API_PREFIX.PREVIEW : HELIX_API_PREFIX.LIVE];
     const apiEndpoint = `${HELIX_ENDPOINT}/${action}/${owner}/${repo}/${branch}`;
     for (const page of pages) {

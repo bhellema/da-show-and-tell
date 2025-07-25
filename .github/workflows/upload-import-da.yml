@@ -63,16 +63,16 @@ jobs:
             echo "errorMessage=$errorMessage" >> $GITHUB_ENV
           fi
 
-          total_steps=4
+          total_steps=2
           preview_operation=''
 
           if ${{ github.event.inputs.preview == 'true' }}; then
-            total_steps=5
+            total_steps=3
             preview_operation='preview'
           fi
 
           if ${{ github.event.inputs.previewAndPublish == 'true' }}; then
-            total_steps=5
+            total_steps=3
             preview_operation='preview and publish'
           fi
 
@@ -154,7 +154,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callbacks_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: ${{ steps.da-upload-step.outputs.error_message }} (Step 3 of ${{ env.total_steps }}) ${{ env.ACTION_URL }} 
+          message: ${{ steps.da-upload-step.outputs.error_message }} ${{ env.ACTION_URL }} 
           status_type: error
           agent_name: upload-import-da
 
@@ -164,7 +164,7 @@ jobs:
         with:
           callback_urls: ${{ github.event.inputs.aemy_callback_urls }}
           context: ${{ github.event.inputs.aemy_context }}
-          message: Now performing ${{ env.preview_operation }} (Step 5 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
+          message: Now performing ${{ env.preview_operation }} (Step 3 of ${{ env.total_steps }}) ${{ env.ACTION_URL }}
           status_type: progress
           agent_name: upload-import-da
 
